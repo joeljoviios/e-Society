@@ -8,6 +8,14 @@ struct PaymentsView: View {
     @State private var amount: String = ""
     @State private var date = Date()
     @State private var monthYear = ""
+    @State private var showSuccess = false
+    
+    func clearFields() {
+        amount = ""
+        selectedFamily = nil
+        monthYear = ""
+        date = Date()
+    }
 
     var body: some View {
         Form {
@@ -22,12 +30,22 @@ struct PaymentsView: View {
             Section(header: Text("Payment")) {
                 TextField("Amount", text: $amount).keyboardType(.decimalPad)
                 DatePicker("Date", selection: $date, displayedComponents: .date)
-                TextField("MonthYear (e.g. 2025-10)", text: $monthYear)
+                TextField("Description (e.g. Rent, Maintainance)", text: $monthYear)
             }
 
             Button("Record Payment") {
                 guard let famId = selectedFamily, let amt = Double(amount) else { return }
                 paymentsVM.recordPayment(familyId: famId, amount: amt, date: date, monthYear: monthYear)
+                showSuccess = true
+            }
+            .alert(isPresented: $showSuccess) {
+                Alert(
+                    title: Text("Success"),
+                    message: Text("Payment recorded successfully!"),
+                    dismissButton: .default(Text("OK"), action: {
+                        clearFields()
+                    })
+                )
             }
         }
         .navigationTitle("Record Payment")
